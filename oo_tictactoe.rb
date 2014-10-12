@@ -140,7 +140,7 @@ class Game
                 ["1", "5", "9"], ["3", "5", "7"] ]
 
   attr_accessor :winner
-  attr_reader :board_model, :human, :computer, :board_view
+  attr_reader :board_model, :board_view, :human, :computer
 
   def initialize
     @board_model = BoardModel.new
