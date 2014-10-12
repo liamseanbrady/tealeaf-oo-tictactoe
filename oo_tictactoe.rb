@@ -1,6 +1,6 @@
 # Problem Scope:
 
-# Create an object oriented tic tac toe game.
+# Create an object-oriented tic tac toe game.
 
 # Requirements:
 
@@ -13,9 +13,42 @@
 
 # Verbs - play, take a turn, won, tie, assign x, assign o, draw board.
 
-require "pry"
+class BoardView
+  attr_reader :model
 
-class Board
+  def initialize(m)
+    @model = m
+  end
+
+  def display_board
+    self.clear_screen
+
+    puts ""
+    puts " #{self.model["1"]} | #{self.model["2"]} | #{self.model["3"]}"
+    puts "---+---+---"
+    puts " #{self.model["4"]} | #{self.model["5"]} | #{self.model["6"]}"
+    puts "---+---+---"
+    puts " #{self.model["7"]} | #{self.model["8"]} | #{self.model["9"]}"
+    puts ""
+  end
+
+  def clear_screen
+    system "clear"
+  end
+
+  def display_board_w_winner(w)
+    self.display_board
+    puts ""
+    if w != nil
+      puts "#{w} won!"
+    else
+      puts "It's a tie!"
+    end
+    puts ""
+  end
+end
+
+class BoardModel
   attr_accessor :board
 
   def initialize
@@ -31,26 +64,42 @@ class Board
   end
 
   def empty_square
-    sqrs = self.board.to_a
-    empt_sqrs = sqrs.select{ |sqr| sqr[1] == " " }
-    empt_sqrs.sample[0]
+    empty_squares.sample[0]
   end
 
   def full?
     self.board.values.include?(" ") ? false : true
   end
 
+  def half_full?
+    empty_squares.count < 5
+  end
+
   def to_s
     puts "The board currently looks like #{self.board}"
   end
+
+  private
+
+  def empty_squares
+    sqrs = self.board.to_a
+    empt_sqrs = sqrs.select{ |sqr| sqr[1] == " " }
+  end
+
 end
 
-class Human
-  attr_reader :name, :board, :piece
+class Player
+  attr_reader :name, :board_model, :piece
 
   def initialize(n, b)
     @name = n
-    @board = b
+    @board_model = b
+  end
+end
+
+class Human < Player
+  def initialize(n, b)
+    super(n, b)
     @piece = "X"
   end
 
@@ -58,47 +107,69 @@ class Human
     begin
       puts "Please pick a square to place your piece (1 - 9)"
       sqr_num = gets.chomp
-    end until self.board.square_empty?(sqr_num)
+    end until self.board_model.square_empty?(sqr_num)
 
-    self.board.fill_square(sqr_num, self.piece)
+    self.board_model.fill_square(sqr_num, self.piece)
   end
 end
 
-class Computer
-  attr_reader :name, :board, :piece
-
+class Computer < Player
   def initialize(n, b)
-    @name = n
-    @board = b
+    super(n, b)
     @piece = "O"
   end
 
   def place_piece
-    empty_sqr = board.empty_square
-    board.fill_square(empty_sqr, self.piece)
+    empty_sqr = board_model.empty_square
+    board_model.fill_square(empty_sqr, self.piece)
   end
 end
 
 class Game
-  attr_reader :board, :human, :computer
+  WIN_OPTNS = [ ["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], 
+                ["1", "4", "7"], ["2", "5", "8"], ["3", "6", "9"], 
+                ["1", "5", "9"], ["3", "5", "7"] ]
+
+  attr_accessor :winner
+  attr_reader :board_model, :human, :computer, :board_view
 
   def initialize
-    @board = Board.new
-    @human = Human.new("Ingin", self.board)
-    @computer = Computer.new("C3P0", self.board)
+    @board_model = BoardModel.new
+    @human = Human.new("Ingin", self.board_model)
+    @computer = Computer.new("C3P0", self.board_model)
+    @board_view = BoardView.new(self.board_model.board)
+    @winner = nil
   end
 
   def play
     begin
       human.place_piece
-      break if self.board.full?
+      break if board_model.full? || winner?
       computer.place_piece
-      puts board
-    end until self.board.full?
+      board_view.display_board
+    end until board_model.full? || winner?
+    board_view.display_board_w_winner(winner)
   end
+
+  def winner?
+    if board_model.half_full?
+      WIN_OPTNS.each do |w|
+        if board_model.board.values_at(*w).count("X") == 3
+          winner = "#{human.name}"
+          return true
+        elsif board_model.board.values_at(*w).count("O") == 3
+          winner = "#{computer.name}"
+          return true
+        end
+      end
+      return false
+    end
+  end
+
 end
 
 game = Game.new.play
+
 
 # Should start Game
 # Should play game
@@ -110,6 +181,9 @@ game = Game.new.play
 # Should allow computer player to place their piece
 # Should check before each player moves whether the board is full
 # Should exit the loop if the board is full
-
-
-
+# Should check if there is a winner
+# Should display who the winner is
+# Create UI to display the results
+# Should check if there is a winner
+# Should display winner from BoardView class
+# Should perform system "clear" from BoardView class
