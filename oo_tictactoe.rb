@@ -7,7 +7,7 @@
 # - Tic tac toe is a game played between two players.
 # - Each player takes a turn, until either someone has won (3 identical pieces across, 3 identical pieces down, 3 identical pieces diagonal each way), or the board is full with pieces (this is a tie). 
 # - One player is assigned X, and one player is assigned O.
-# - The game is played on a piece of paper on which a 'board' is drawn.
+# - The game is played on a surface on which a 'board' is drawn.
 
 # Nouns - Game, Player, Piece, Board
 
@@ -89,7 +89,8 @@ class BoardModel
 end
 
 class Player
-  attr_reader :name, :board_model, :piece
+  attr_accessor :name
+  attr_reader :board_model, :piece
 
   def initialize(n, b)
     @name = n
@@ -101,6 +102,14 @@ class Human < Player
   def initialize(n, b)
     super(n, b)
     @piece = "X"
+  end
+
+  def choose_name
+    puts "What's your name?"
+    n = gets.chomp
+    if !n.empty?
+      self.name = n
+    end
   end
 
   def place_piece
@@ -135,13 +144,15 @@ class Game
 
   def initialize
     @board_model = BoardModel.new
-    @human = Human.new("Ingin", self.board_model)
-    @computer = Computer.new("C3P0", self.board_model)
     @board_view = BoardView.new(self.board_model.board)
+    @human = Human.new("Anonymous", self.board_model)
+    @computer = Computer.new("C3P0", self.board_model)
     @winner = nil
   end
 
   def play
+    human.choose_name
+    board_view.display_board
     begin
       human.place_piece
       break if board_model.full? || winner?
@@ -187,3 +198,4 @@ game = Game.new.play
 # Should check if there is a winner
 # Should display winner from BoardView class
 # Should perform system "clear" from BoardView class
+# Should allow user to choose their name
