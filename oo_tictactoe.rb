@@ -155,10 +155,10 @@ class Game
     if board_model.half_full?
       WIN_OPTNS.each do |w|
         if board_model.board.values_at(*w).count("X") == 3
-          winner = "#{human.name}"
+          self.winner = "#{human.name}"
           return true
         elsif board_model.board.values_at(*w).count("O") == 3
-          winner = "#{computer.name}"
+          self.winner = "#{computer.name}"
           return true
         end
       end
